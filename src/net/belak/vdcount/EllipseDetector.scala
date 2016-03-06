@@ -18,6 +18,8 @@ class EllipseDetector(srcDir: File, outDir: File) {
 
   @throws(classOf[IOException])
   def detect(imgFile: File) {
+    println(s"Converting ${imgFile.getName}")
+
     val image: Mat = Imgcodecs.imread(imgFile.getAbsolutePath, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
     val outImage: Mat = image.clone
     Imgproc.bilateralFilter(image, outImage, 10, 30, 30)
@@ -58,9 +60,9 @@ class EllipseDetector(srcDir: File, outDir: File) {
   }
 
   private def rotate(image: Mat, degrees: Int, innerBoxSize: Int): Mat = {
-    val center: Point = new Point(image.width / 2, image.height / 2)
-    val rotationMat: Mat = Imgproc.getRotationMatrix2D(center, degrees, 1)
-    val result: Mat = new Mat
+    val center = new Point(image.width / 2, image.height / 2)
+    val rotationMat = Imgproc.getRotationMatrix2D(center, degrees, 1)
+    val result = new Mat
     Imgproc.warpAffine(image, result, rotationMat, new Size(image.width, image.height))
 
     result.submat(center.y.toInt - innerBoxSize, center.y.toInt + innerBoxSize,
@@ -74,17 +76,17 @@ class EllipseDetector(srcDir: File, outDir: File) {
     val x = ellipse.center.x.round.toInt
     val y = ellipse.center.y.round.toInt
 
-    val (rowStart: Int, rowEnd: Int) =
+    val (colStart: Int, colEnd: Int) =
       if (x - d < 0) (0, 2 * d)
       else if (x + d >= image.cols) (image.cols - 1 - 2 * d, image.cols - 1)
-      else (x - 2, x + d)
+      else (x - d, x + d)
 
-    val (colStart: Int, colEnd: Int) =
+    val (rowStart: Int, rowEnd: Int) =
       if (y - d < 0) (0, 2 * d)
       else if (y + d >= image.rows) (image.rows - 1 - 2 * d, image.rows - 1)
       else (y - d, y + d)
 
-    new BoxDim(colStart, colEnd, rowStart, rowEnd)
+    new BoxDim(rowStart, rowEnd, colStart, colEnd)
   }
 }
 
