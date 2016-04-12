@@ -39,7 +39,7 @@ object RotatePatches extends App with Constants {
   def imgName(srcImgFile: File) = outDir.getAbsolutePath + File.separator + srcImgFile.getName.split("\\.")(0)
 
   srcDir.listFiles().filter(_.getName.endsWith(".png")).foreach(imgFile => {
-    varyExamples(Imgcodecs.imread(imgFile.getAbsolutePath), imgName(imgFile), 10)
+    varyExamples(Imgcodecs.imread(imgFile.getAbsolutePath), imgName(imgFile), 360)
     if (args.length > 2 && args(2) == "true") imgFile.delete()
   })
 }
