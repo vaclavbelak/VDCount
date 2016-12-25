@@ -4,8 +4,7 @@ import java.io.File
 
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
-import org.opencv.imgproc.Imgproc
-import org.opencv.ml.{SVM, StatModel, TrainData}
+import org.opencv.ml.{SVM, Ml}
 import org.opencv.objdetect.HOGDescriptor
 
 import scala.util.Random
@@ -16,7 +15,7 @@ import scala.util.Random
 object TrainSVM extends App with Constants {
 
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
-  val hd = new HOGDescriptor(new Size(24,24), new Size(16, 16), new Size(8, 8), new Size(8, 8), 9)
+  val hd = new HOGDescriptor(new Size(24, 24), new Size(16, 16), new Size(8, 8), new Size(8, 8), 9)
   val COLNUM = 144
 
   println("Loading data...")
@@ -24,8 +23,17 @@ object TrainSVM extends App with Constants {
   println(data)
   val svm = SVM.create()
   println("Data loaded, training SVM")
-  svm.train(data.trainX, -1, data.trainY)
+  svm.train(data.trainX, Ml.ROW_SAMPLE, data.trainY)
   println("Training finished")
+  val predLabels = Array.ofDim[Float](data.testX.rows())
+  var correctCount = 0d
+  for (i <- 0 until data.testX.rows()) {
+    if (svm.predict(data.testX.row(i)).toInt == data.testY.get(i, 0)(0).toInt) {
+      correctCount += 1
+    }
+  }
+  print(s"Error rate ${correctCount / data.testY.rows()}")
+  svm.save("/Users/belak/Projects/VDCount/svm-opencv.xml")
 
   def prepareData(dir: File, p: Double) = {
     assert(p <= 1 & p > 0)
@@ -45,7 +53,7 @@ object TrainSVM extends App with Constants {
   }
 
   def labelsMatrix(fileList: List[(Int, File)]) = {
-    val m = new Mat(fileList.size, 1, CvType.CV_32FC1)
+    val m = new Mat(fileList.size, 1, CvType.CV_32S)
     for (row <- fileList.indices) {
       m.put(row, 0, fileList(row)._1)
     }
