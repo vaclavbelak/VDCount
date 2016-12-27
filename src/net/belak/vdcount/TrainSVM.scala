@@ -15,13 +15,17 @@ import scala.util.Random
 object TrainSVM extends App with Constants {
 
   System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
-  val hd = new HOGDescriptor(new Size(24, 24), new Size(16, 16), new Size(8, 8), new Size(8, 8), 9)
+  val hd = new HOGDescriptor("/Users/belak/Projects/VDCount-scala/hog-config.xml")
   val COLNUM = 144
 
   println("Loading data...")
-  val data = prepareData(new File(args(0)), 0.8)
+  val data = prepareData(new File(args(0)))
   println(data)
   val svm = SVM.create()
+//  svm.setC(1)
+//  svm.setGamma(0.5)
+  svm.setKernel(SVM.RBF)
+//  svm.setType(SVM.C_SVC)
   println("Data loaded, training SVM")
   svm.train(data.trainX, Ml.ROW_SAMPLE, data.trainY)
   println("Training finished")
@@ -33,20 +37,20 @@ object TrainSVM extends App with Constants {
     }
   }
   print(s"Error rate ${correctCount / data.testY.rows()}")
-  svm.save("/Users/belak/Projects/VDCount/svm-opencv.xml")
+//  svm.save("/Users/belak/Projects/VDCount-scala/svm-model.xml")
 
-  def prepareData(dir: File, p: Double) = {
-    assert(p <= 1 & p > 0)
+  def prepareData(dir: File) = {
     val rnd = new Random(25)
-    val posFiles = new File(dir, "positive/rotated").listFiles().filter(_.getName.endsWith(".png")).toList.sortBy(_.getName).
+    val posFilesTrain = new File(dir, "train/positive/rotated").listFiles().filter(_.getName.endsWith(".png")).toList.sortBy(_.getName).
       map(f => (1, f))
-    val negFiles = new File(dir, "negative/rotated").listFiles().filter(_.getName.endsWith(".png")).toList.sortBy(_.getName).
+    val posFilesTest = new File(dir, "test/positive/rotated").listFiles().filter(_.getName.endsWith(".png")).toList.sortBy(_.getName).
+      map(f => (1, f))
+    val negFilesTrain = new File(dir, "train/negative/rotated").listFiles().filter(_.getName.endsWith(".png")).toList.sortBy(_.getName).
       map(f => (-1, f))
-    val allFiles = rnd.shuffle(posFiles ::: negFiles ::: Nil)
-    val pivot = (allFiles.size * p).toInt
-    val trainFiles = allFiles.take(pivot)
-    val trailLabels = new Mat()
-    val testFiles = allFiles.drop(pivot)
+    val negFilesTest = new File(dir, "test/negative/rotated").listFiles().filter(_.getName.endsWith(".png")).toList.sortBy(_.getName).
+      map(f => (-1, f))
+    val trainFiles = rnd.shuffle(posFilesTrain ::: negFilesTrain ::: Nil)
+    val testFiles = rnd.shuffle(posFilesTest ::: negFilesTest ::: Nil)
 
     new Data(trainX = loadDataMatrix(trainFiles.map(_._2)), trainY = labelsMatrix(trainFiles),
       testX = loadDataMatrix(testFiles.map(_._2)), testY = labelsMatrix(testFiles))
