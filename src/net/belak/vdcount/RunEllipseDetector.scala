@@ -3,7 +3,7 @@ package net.belak.vdcount
 import java.io.File
 import org.opencv.core.Core
 
-object RunVDCount {
+object RunEllipseDetector {
 
   def main(args: Array[String]) {
     System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
