@@ -5,7 +5,7 @@ import java.io.{PrintWriter, IOException, File}
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
-import scala.collection.JavaConversions.iterableAsScalaIterable
+import scala.collection.JavaConverters.iterableAsScalaIterable
 
 /**
   * Detects ellipses that resemble Varroa Destructor bee mite.
@@ -13,7 +13,7 @@ import scala.collection.JavaConversions.iterableAsScalaIterable
   * @param outDir Where the output files should be stored?
   * @author vaclav@belak.net
   */
-class EllipseDetector(srcDir: File, outDir: File) extends Constants {
+class VarroaDetector(srcDir: File, outDir: File) extends Constants {
 
   if (!outDir.exists()) outDir.mkdirs()
 
@@ -41,7 +41,7 @@ class EllipseDetector(srcDir: File, outDir: File) extends Constants {
     val contours = new java.util.ArrayList[MatOfPoint]
     val hierarchy = new Mat
     Imgproc.findContours(outImage.clone, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0))
-    val minEllipse = contours.filter(_.toArray.length >= 5).map(contour => Imgproc.fitEllipse(new MatOfPoint2f(contour.toArray: _*))).toList
+    val minEllipse = iterableAsScalaIterable(contours).filter(_.toArray.length >= 5).map(contour => Imgproc.fitEllipse(new MatOfPoint2f(contour.toArray: _*))).toList
 
     val drawing: Mat = image.clone
     val color: Scalar = new Scalar(0, 153, 0)
