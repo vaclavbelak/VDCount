@@ -15,6 +15,6 @@ trait Constants {
   val MAX_VD_HW_RATIO = 1.5
   val MIN_VD_HW_RATIO = 1.1
 
-  val INNER_PATCH_SIZE = 24 // Has to be an even number!
+  val INNER_PATCH_SIZE = 20 // Has to be an even number!
 
 }
